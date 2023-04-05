@@ -1,0 +1,27 @@
+import okio.ByteString;
+
+CREATE TABLE Erc20Token (
+    erc20TokenId INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    chainId      INTEGER NOT NULL,
+    address      BLOB AS ByteString NOT NULL CHECK (length(address) == 20),
+    name         TEXT NOT NULL,
+    symbol       TEXT NOT NULL,
+    decimals     INTEGER NOT NULL
+);
+
+CREATE UNIQUE INDEX erc20_token_unique ON Erc20Token (chainId, address);
+
+insert:
+INSERT INTO Erc20Token(chainId, address, name, symbol, decimals)
+VALUES (?, ?, ?, ?, ?);
+
+getTokenId:
+SELECT erc20TokenId
+FROM Erc20Token
+WHERE chainId=:chainId
+AND address=:address;
+
+selectAll:
+SELECT *
+FROM Erc20Token
+WHERE chainId IN :chainIds;

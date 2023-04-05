@@ -4,24 +4,17 @@ import com.github.nailkhaf.web3.web3Module
 import io.ktor.client.engine.*
 import io.ktor.client.engine.mock.*
 import io.ktor.http.*
-import io.mockk.mockkClass
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.jsonPrimitive
 import org.koin.core.context.GlobalContext
 import org.koin.core.context.stopKoin
 import org.koin.test.KoinTest
 import org.koin.test.get
-import org.koin.test.mock.MockProvider
 import org.koin.test.mock.declare
 import kotlin.test.*
 
 class RpcClientTest : KoinTest {
 
-    init {
-        MockProvider.register {
-            mockkClass(it)
-        }
-    }
 
     @BeforeTest
     fun setup() {

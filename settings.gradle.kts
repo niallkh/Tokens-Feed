@@ -20,6 +20,7 @@ dependencyResolutionManagement {
             val ktorVersion: String = version("ktor", "2.2.4")
             val serializationVersion: String = version("serialization", "1.5.0")
             val koinVersion: String = version("koin", "3.4.0")
+            val sqlVersion: String = version("sql", "1.5.5")
 
             library("androidx.ktx", "androidx.core:core-ktx:1.9.0")
             library("androidx.lifecycle", "androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
@@ -66,6 +67,7 @@ dependencyResolutionManagement {
                 "org.jetbrains.kotlinx",
                 "kotlinx-serialization-json"
             ).versionRef(serializationVersion)
+            library("coroutines", "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.0-Beta")
 
             library("junit", "junit:junit:4.13.2")
             library("androidx.junit", "androidx.test.ext:junit:1.1.5")
@@ -76,6 +78,18 @@ dependencyResolutionManagement {
             library("bcprov", "org.bouncycastle:bcprov-jdk18on:1.72")
             library("atomicfu", "org.jetbrains.kotlinx:atomicfu:0.18.5")
 
+            library("sql.core", "com.squareup.sqldelight", "runtime").versionRef(sqlVersion)
+            library(
+                "sql.coroutines",
+                "com.squareup.sqldelight",
+                "coroutines-extensions"
+            ).versionRef(sqlVersion)
+            library("sql.android", "com.squareup.sqldelight", "android-driver")
+                .versionRef(sqlVersion)
+            library("sql.jvm", "com.squareup.sqldelight", "sqlite-driver").versionRef(sqlVersion)
+            library("wire", "com.squareup.wire:wire-runtime:4.4.3")
+            library("datastore", "androidx.datastore:datastore-core-okio:1.1.0-alpha03")
+
             bundle(
                 "androidx",
                 listOf("androidx.ktx", "androidx.lifecycle", "androidx.activity.compose")
@@ -84,6 +98,8 @@ dependencyResolutionManagement {
                 "compose",
                 listOf("compose.ui", "compose.ui.tooling.preview", "compose.ui.material")
             )
+            bundle("sql", listOf("sql.core", "sql.coroutines"))
+            bundle("core", listOf("coroutines", "bignum", "okio", "atomicfu", "koin"))
             bundle("ktor", listOf("ktor", "ktor.content", "ktor.json", "ktor.compress"))
             bundle("debug", listOf("compose.ui.tooling", "compose.ui.test.manifest"))
             bundle("test", listOf("koin.test"))
@@ -97,4 +113,9 @@ dependencyResolutionManagement {
 
 rootProject.name = "Tokens Feed"
 include(":app")
+
 include(":core:web3")
+include(":core:database")
+include(":core:datastore")
+
+include(":data:tokens")

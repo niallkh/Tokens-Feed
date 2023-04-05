@@ -1,7 +1,7 @@
 plugins {
     kotlin("multiplatform")
     id("com.android.library")
-    kotlin("plugin.serialization")
+    id("com.squareup.wire")
 }
 
 kotlin {
@@ -10,22 +10,21 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
+                implementation(libs.datastore)
+                implementation(libs.wire)
                 implementation(libs.bundles.core)
-                implementation(libs.bundles.ktor)
             }
         }
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test-junit"))
                 implementation(libs.mockk)
-                implementation(libs.ktor.mock)
                 implementation(libs.bundles.test)
             }
         }
         val androidMain by getting {
             dependencies {
-                implementation(libs.bcprov)
-                implementation(libs.ktor.okhttp)
+                implementation(libs.sql.android)
             }
         }
         val androidUnitTest by getting
@@ -33,10 +32,15 @@ kotlin {
 }
 
 android {
-    namespace = "com.github.nailkhaf.web3"
+    namespace = "com.github.nailkhaf.datastore"
     compileSdk = 33
     defaultConfig {
         minSdk = 24
         targetSdk = 33
+    }
+}
+
+wire {
+    kotlin {
     }
 }
