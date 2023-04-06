@@ -9,10 +9,8 @@ import com.ionspin.kotlin.bignum.integer.BigInteger
 import com.squareup.sqldelight.db.SqlDriver
 import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockkClass
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import okio.ByteString.Companion.decodeHex
 import org.junit.Test
@@ -43,7 +41,7 @@ class ERC20TokensRepositoryTest : KoinTest {
                 .also { Database.Schema.create(it) }
         }
         declareMock<TokenListProvider> {
-            every { this@declareMock.invoke(any()) } returns flowOf(TOKEN_LIST)
+            coEvery { this@declareMock.invoke(any()) } returns TOKEN_LIST
         }
     }
 
@@ -66,7 +64,7 @@ class ERC20TokensRepositoryTest : KoinTest {
             tokensRepository.detectNewERC20Tokens(1u, ACCOUNT)
             val balances = tokensRepository.getTokenBalances(1u, ACCOUNT).first()
             assertEquals(4, balances.size)
-            assertEquals(BigInteger(2635296952), balances[3].balance)
+            assertEquals(BigInteger(2635296952), balances[3].value)
         }
     }
 }

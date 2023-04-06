@@ -47,12 +47,22 @@ android {
     packagingOptions {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/versions/9/previous-compilation-data.bin"
         }
     }
 }
 
 dependencies {
 
+    implementation(project(":feature:account"))
+    implementation(project(":feature:balances"))
+    implementation(project(":feature:transfers"))
+
+    implementation(project(":core:web3"))
+
+    implementation(libs.koin.android)
+    implementation(libs.decompose)
+    implementation(libs.bundles.core)
     implementation(libs.bundles.androidx)
     implementation(libs.bundles.compose)
 

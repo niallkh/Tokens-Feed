@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Tokens Feed</string>
+    <string name="app_section_account_title">Account</string>
+    <string name="app_section_account_balances">Balances</string>
+    <string name="app_section_account_transfers">Incoming transfers</string>
+    <string name="account_input_label">Please, enter address</string>
 </resources>

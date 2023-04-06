@@ -1,16 +1,13 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package com.github.nailkhaf.data.tokens
 
-import com.github.nailkhaf.data.tokens.models.Erc20Token
-import com.github.nailkhaf.data.tokens.models.Erc20TokenBalance
-import com.github.nailkhaf.data.tokens.models.map
+import com.github.nailkhaf.data.tokens.models.*
 import com.github.nailkhaf.data.tokens.tokenlist.TokenList
 import com.github.nailkhaf.data.tokens.tokenlist.TokenListProvider
 import com.github.nailkhaf.database.Erc20TokenQueries
 import com.github.nailkhaf.web3.Web3Provider
 import com.github.nailkhaf.web3.abi.contractCall
 import com.github.nailkhaf.web3.contracts.ERC20
+import com.github.nailkhaf.web3.contracts.Multicall3
 import com.github.nailkhaf.web3.models.Address
 import com.github.nailkhaf.web3.models.asAddress
 import com.github.nailkhaf.web3.multiCall
@@ -18,8 +15,8 @@ import com.ionspin.kotlin.bignum.integer.BigInteger
 import com.squareup.sqldelight.runtime.coroutines.asFlow
 import com.squareup.sqldelight.runtime.coroutines.mapToList
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import com.github.nailkhaf.database.Erc20Token as Erc20TokenDB
 
@@ -32,26 +29,26 @@ class DefaultERC20TokensRepository(
     override fun getTokenBalances(
         chainId: ULong,
         account: Address
-    ): Flow<List<Erc20TokenBalance>> = tokenQueries.selectAll(listOf(chainId.toLong()))
+    ): Flow<List<TokenBalance>> = tokenQueries.selectAll(listOf(chainId.toLong()))
         .asFlow()
-        .mapToList(Dispatchers.IO)
-        .map {
-            getTokenBalances(chainId, account, it)
-                .map { (token, balance) -> Erc20TokenBalance(account, map(token), balance) }
-        }
+        .mapToList()
+        .map { getTokenBalances(chainId, account, it) }
 
     private suspend fun getTokenBalances(
         chainId: ULong,
         account: Address,
         tokens: List<Erc20TokenDB>
-    ): List<Pair<Erc20TokenDB, BigInteger>> {
+    ): List<TokenBalance> {
+        val callGetEth = Multicall3.getEthBalance.contractCall(Multicall3.address, account)
         val calls = tokens.map { ERC20.balanceOf.contractCall(it.address.asAddress, account) }
 
-        web3.multiCall(chainId, *calls.toTypedArray())
+        web3.multiCall(chainId, *(calls + callGetEth).toTypedArray())
 
-        return tokens.zip(calls)
+        val nativeBalance =
+            TokenBalance(account, nativeTokensByChainId.getValue(chainId), callGetEth.result)
+        return listOf(nativeBalance) + tokens.zip(calls)
             .filter { (_, call) -> (call.resultOrNull ?: BigInteger.ZERO) != BigInteger.ZERO }
-            .map { (token, call) -> token to call.result }
+            .map { (token, call) -> TokenBalance(account, map(token), call.result) }
     }
 
     override suspend fun detectNewERC20Tokens(
@@ -76,23 +73,22 @@ class DefaultERC20TokensRepository(
         tokenList: TokenList,
         account: Address,
         chainId: ULong
-    ): List<Address> = tokenListProvider(tokenList)
-        .map { addresses ->
-            val calls = addresses.map { ERC20.balanceOf.contractCall(it, account) }
+    ): List<Address> {
+        val addresses = tokenListProvider(tokenList)
 
-            web3.multiCall(chainId, *calls.toTypedArray())
+        val calls = addresses.map { ERC20.balanceOf.contractCall(it, account) }
 
-            addresses.zip(calls).mapNotNull { (address, call) ->
-                address.takeIf { (call.resultOrNull ?: BigInteger.ZERO) != BigInteger.ZERO }
-            }
+        web3.multiCall(chainId, *calls.toTypedArray())
+
+        return addresses.zip(calls).mapNotNull { (address, call) ->
+            address.takeIf { (call.resultOrNull ?: BigInteger.ZERO) != BigInteger.ZERO }
         }
-        .toList()
-        .flatten()
+    }
 
     private suspend fun filterNewTokens(
         tokens: List<Address>,
         chainId: ULong
-    ) = withContext(Dispatchers.IO) {
+    ) = withContext(Dispatchers.Default) {
         tokenQueries.transactionWithResult {
             tokens.filter {
                 tokenQueries.getTokenId(chainId.toLong(), it.bytes).executeAsOneOrNull() == null
@@ -103,7 +99,7 @@ class DefaultERC20TokensRepository(
     private suspend fun getOnChainData(
         newTokens: List<Address>,
         chainId: ULong
-    ): List<Erc20Token> = newTokens.chunked(100).flatMap {
+    ): List<Erc20Token> {
         val calls = newTokens.map {
             Triple(
                 ERC20.name.contractCall(it),
@@ -114,7 +110,7 @@ class DefaultERC20TokensRepository(
 
         web3.multiCall(chainId, *calls.flatMap { it.toList() }.toTypedArray())
 
-        newTokens.zip(calls)
+        return newTokens.zip(calls)
             .filter { (_, call) -> call.toList().all { it.resultOrNull != null } }
             .map { (address, call) ->
                 Erc20Token(
@@ -128,7 +124,7 @@ class DefaultERC20TokensRepository(
             }
     }
 
-    private suspend fun saveTokens(tokens: List<Erc20Token>) = withContext(Dispatchers.IO) {
+    private suspend fun saveTokens(tokens: List<Erc20Token>) = withContext(Dispatchers.Default) {
         tokenQueries.transaction {
             for (token in tokens) {
                 val exists = tokenQueries.getTokenId(token.chainId.toLong(), token.address.bytes)

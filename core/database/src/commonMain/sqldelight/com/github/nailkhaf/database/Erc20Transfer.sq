@@ -33,5 +33,6 @@ FROM Erc20Transfer
 INNER JOIN Erc20Token USING (erc20TokenId)
 WHERE chainId IN :chainIds
 AND (fromAddress=:account OR toAddress=:account)
-ORDER BY timestamp DESC;
+ORDER BY timestamp DESC
+LIMIT :limit;
 

@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
-private const val LOGS_STEP_SIZE = 1000u
+private const val LOGS_STEP_SIZE = 2000u
 private const val MAX_DISTANCE = 1_000_000u
 private const val CONFIRMATION_BLOCKS = 2u
 
@@ -33,11 +33,12 @@ class DefaultERC20TransfersRepository(
 
     override fun getTransfers(
         chainId: ULong,
-        account: Address
+        account: Address,
+        limit: UInt
     ): Flow<List<Erc20TokenTransfer>> = transferQueries
-        .selectAll(listOf(chainId.toLong()), account.bytes)
+        .selectAll(listOf(chainId.toLong()), account.bytes, limit.toLong())
         .asFlow()
-        .mapToList(Dispatchers.IO)
+        .mapToList()
         .map { it.map(::map) }
 
     override suspend fun detectNewIncomingERC20Transfers(
@@ -113,7 +114,7 @@ class DefaultERC20TransfersRepository(
         chainId: ULong,
     ): UInt {
         val timestamps = getTimestamps(ethLogs, chainId)
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.Default) {
             transferQueries.transactionWithResult {
                 var saved = 0u
                 for (ethLog in ethLogs) {

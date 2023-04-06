@@ -6,7 +6,11 @@ import kotlinx.coroutines.flow.Flow
 
 interface ERC20TransfersRepository {
 
-    fun getTransfers(chainId: ULong, account: Address): Flow<List<Erc20TokenTransfer>>
+    fun getTransfers(
+        chainId: ULong,
+        account: Address,
+        limit: UInt = 50u
+    ): Flow<List<Erc20TokenTransfer>>
 
     suspend fun detectNewIncomingERC20Transfers(
         chainId: ULong,

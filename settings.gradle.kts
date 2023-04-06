@@ -60,6 +60,7 @@ dependencyResolutionManagement {
             library("okio", "com.squareup.okio:okio:3.3.0")
 
             library("koin", "io.insert-koin", "koin-core").versionRef(koinVersion)
+            library("koin.android", "io.insert-koin", "koin-android").versionRef(koinVersion)
             library("koin.test", "io.insert-koin", "koin-test").versionRef(koinVersion)
 
             library(
@@ -89,6 +90,7 @@ dependencyResolutionManagement {
             library("sql.jvm", "com.squareup.sqldelight", "sqlite-driver").versionRef(sqlVersion)
             library("wire", "com.squareup.wire:wire-runtime:4.4.3")
             library("datastore", "androidx.datastore:datastore-core-okio:1.1.0-alpha03")
+            library("decompose", "com.arkivanov.decompose:decompose:1.0.0")
 
             bundle(
                 "androidx",
@@ -114,8 +116,12 @@ dependencyResolutionManagement {
 rootProject.name = "Tokens Feed"
 include(":app")
 
+include(":feature:balances")
+include(":feature:transfers")
+include(":feature:account")
+
+include(":data:tokens")
+
 include(":core:web3")
 include(":core:database")
 include(":core:datastore")
-
-include(":data:tokens")

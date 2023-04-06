@@ -4,38 +4,24 @@ import android.content.Context
 import com.github.nailkhaf.web3.models.Address
 import com.github.nailkhaf.web3.models.decodeAddress
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 
-private const val TOKENS_CHUNK_SIZE = 100
+private const val TOKENS_CHUNK_SIZE = 500
 
 class AndroidTokenListProvider(
     private val context: Context
 ) : TokenListProvider {
 
-    override fun invoke(
-        tokenList: TokenList
-    ): Flow<List<Address>> = flow {
+    override suspend fun invoke(tokenList: TokenList): List<Address> {
         val asset = when (tokenList) {
             TokenList.OneInch -> "tokenlists/oneinch.txt"
             TokenList.Rainbow -> "tokenlists/rainbow.txt"
         }
 
-        val callerContext = currentCoroutineContext()
-        withContext(Dispatchers.IO) {
-            sequence {
-                context.assets.open(asset).bufferedReader().use {
-                    yield(it.readLine().decodeAddress())
-                }
+        return withContext(Dispatchers.Default) {
+            context.assets.open(asset).bufferedReader().useLines { lines ->
+                lines.map { it.decodeAddress() }.toList()
             }
-                .chunked(TOKENS_CHUNK_SIZE)
-                .forEach { addresses ->
-                    withContext(callerContext) {
-                        emit(addresses)
-                    }
-                }
         }
     }
 }
