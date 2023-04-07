@@ -2,14 +2,14 @@
 
 package com.github.nailkhaf.tokensfeed.contents
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Text
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -23,7 +23,7 @@ import com.github.nailkhaf.tokensfeed.R
 import kotlinx.coroutines.launch
 
 @Composable
-fun LazyItemScope.AccountContent(
+fun AccountContent(
     accountComponent: AccountComponent,
     modifier: Modifier = Modifier
 ) {
@@ -32,13 +32,12 @@ fun LazyItemScope.AccountContent(
     AddressTextField(
         modifier = modifier
             .padding(start = 16.dp, end = 8.dp)
-            .fillMaxWidth()
-            .animateItemPlacement(),
+            .fillMaxWidth(),
         account = state.account,
         error = state.error,
         submitted = state.submitted,
         onSubmit = accountComponent.model::onSubmit,
-        onFocussed = accountComponent.model::onFocussed
+        onSelect = accountComponent.model::onSelect
     )
 }
 
@@ -47,16 +46,21 @@ fun AddressTextField(
     account: String,
     error: String?,
     submitted: Boolean,
-    onFocussed: () -> Unit,
+    onSelect: () -> Unit,
     onSubmit: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var text by remember { mutableStateOf(account) }
+    var isFocused by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
 
     OutlinedTextField(
-        modifier = modifier
-            .onFocusChanged { if (it.isFocused) onFocussed() },
+        modifier = modifier.onFocusChanged {
+            if (it.isFocused) {
+                onSelect()
+            }
+            isFocused = it.isFocused
+        },
         singleLine = true,
         label = {
             if (error == null) {
@@ -68,11 +72,13 @@ fun AddressTextField(
         value = text,
         onValueChange = { text = it },
         keyboardOptions = KeyboardOptions(autoCorrect = false, imeAction = ImeAction.Done),
-        keyboardActions = KeyboardActions(onDone = {
-            onSubmit(text)
-        }),
+        keyboardActions = KeyboardActions(onDone = { onSubmit(text) }),
         isError = error != null,
     )
+
+    BackHandler(enabled = isFocused) {
+        focusManager.clearFocus()
+    }
 
     LaunchedEffect(submitted) {
         if (submitted) {

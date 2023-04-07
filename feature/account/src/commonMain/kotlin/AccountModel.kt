@@ -18,7 +18,7 @@ class AccountModel(
 
     val state = MutableStateFlow(savedState ?: State())
 
-    fun onFocussed() {
+    fun onSelect() {
         launch {
             state.update { it.copy(submitted = false) }
         }
@@ -40,7 +40,7 @@ class AccountModel(
     data class State(
         val account: String = "0xcf4B8167378be0503f5674494188a89a1F401D44",
         val error: String? = null,
-        val submitted: Boolean = true,
+        val submitted: Boolean = false,
     ) : Parcelable
 
     override fun onDestroy() = cancel()

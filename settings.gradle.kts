@@ -27,9 +27,11 @@ dependencyResolutionManagement {
             library("androidx.activity.compose", "androidx.activity:activity-compose:1.7.0")
 
             library("compose.ui", "androidx.compose.ui", "ui").versionRef(composeVersion)
-            library("compose.ui.material", "androidx.compose.material", "material").versionRef(
-                composeVersion
-            )
+            library(
+                "compose.ui.material",
+                "androidx.compose.material3",
+                "material3"
+            ).version("1.1.0-beta02")
             library(
                 "compose.ui.tooling.preview",
                 "androidx.compose.ui",

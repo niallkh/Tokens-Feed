@@ -1,15 +1,13 @@
-@file:OptIn(ExperimentalFoundationApi::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.github.nailkhaf.tokensfeed
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -22,32 +20,33 @@ fun MainContent(
     mainComponent: MainComponent,
     modifier: Modifier = Modifier
 ) {
-    AppScaffold(modifier = modifier) {
+    AppScaffold(modifier = modifier) { contentModifier ->
 
-        val balances = BalancesContent(balanceListComponent = mainComponent.balancesComponent)
-        val transfers = TransfersContent(transferListComponent = mainComponent.transfersComponent)
+        Column(modifier = contentModifier.fillMaxHeight()) {
+            AccountContent(
+                accountComponent = mainComponent.accountComponent,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
 
-        LazyColumn(
-            modifier = it,
-            contentPadding = PaddingValues(vertical = 8.dp),
-        ) {
-            item("account") {
-                AccountContent(
-                    accountComponent = mainComponent.accountComponent,
-                )
+            val balances by mainComponent.balancesComponent.model.balances.collectAsState()
+            val transfers by mainComponent.transfersComponent.model.transfers.collectAsState()
+
+            LazyColumn(
+                contentPadding = PaddingValues(vertical = 8.dp),
+            ) {
+                item("section.balances") {
+                    SectionDivider(
+                        stringResource(id = R.string.app_section_account_balances),
+                    )
+                }
+                BalancesContent(balances)
+                item("section.transfers") {
+                    SectionDivider(
+                        stringResource(id = R.string.app_section_account_transfers),
+                    )
+                }
+                TransfersContent(transfers)
             }
-            item("section.balances") {
-                SectionDivider(
-                    stringResource(id = R.string.app_section_account_balances),
-                )
-            }
-            balances()
-            item("section.transfers") {
-                SectionDivider(
-                    stringResource(id = R.string.app_section_account_transfers),
-                )
-            }
-            transfers()
         }
     }
 }
@@ -59,9 +58,8 @@ private fun SectionDivider(
 ) {
     Text(
         text = title,
-        style = MaterialTheme.typography.overline,
-        modifier = modifier
-            .padding(start = 16.dp, top = 8.dp)
+        style = MaterialTheme.typography.titleMedium,
+        modifier = modifier.padding(start = 16.dp, top = 8.dp)
     )
     Divider(modifier = modifier)
     Spacer(modifier = modifier.height(8.dp))
@@ -75,7 +73,7 @@ fun AppScaffold(
     Scaffold(
         modifier = modifier,
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 title = {
                     Text(text = stringResource(id = R.string.app_name))
                 },
