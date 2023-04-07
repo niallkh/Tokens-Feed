@@ -7,6 +7,9 @@ import io.ktor.http.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 internal class DefaultRpcClient(
     private val httpClient: HttpClient,
@@ -37,7 +40,10 @@ internal class DefaultRpcClient(
         val rpcResponse = response.body<RpcResponse>()
 
         rpcResponse.error?.let {
-            throw RpcResponseException(it.toString())
+            val message = it.jsonObject
+                .getOrDefault("message", JsonPrimitive("RPC return error"))
+                .jsonPrimitive.toString()
+            throw RpcResponseException(message)
         }
 
         return rpcResponse.result ?: throw Web3StateUnavailableException()

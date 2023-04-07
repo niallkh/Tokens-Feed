@@ -127,6 +127,8 @@ class DefaultERC20TransfersRepository(
                         .executeAsOneOrNull()
                         ?: continue
 
+                    saved++
+
                     val transferId = transferQueries.getTransferId(
                         ethLog.transactionHash.bytes,
                         ethLog.logIndex.longValue()
@@ -143,8 +145,6 @@ class DefaultERC20TransfersRepository(
                         toAddress = transfer.to.bytes,
                         value_ = transfer.value
                     )
-
-                    saved++
                 }
 
                 saved

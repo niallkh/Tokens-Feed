@@ -9,7 +9,7 @@ import okio.ByteString.Companion.decodeHex
 
 object Multicall3 {
     val address = "ca11bde05977b3631167028862be2a173976ca11".decodeHex().asAddress
-    val maxCallSize = 300
+    const val maxCallAmount = 300
 
     val getEthBalance by functionCall<Address, BigInteger>(
         params = { address("account") },

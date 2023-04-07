@@ -1,7 +1,7 @@
 plugins {
     kotlin("multiplatform")
     id("com.android.library")
-    id("kotlin-parcelize")
+    kotlin("plugin.serialization")
 }
 
 kotlin {
@@ -10,10 +10,9 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(project(":data:account"))
-                implementation(project(":data:tokens"))
                 implementation(project(":core:web3"))
-                implementation(libs.decompose)
+                implementation(project(":core:datastore"))
+                implementation(libs.datastore)
                 implementation(libs.bundles.core)
             }
         }
@@ -31,7 +30,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.github.nailkhaf.feature.balances"
+    namespace = "com.github.nailkhaf.data.account"
     compileSdk = 33
     defaultConfig {
         minSdk = 24

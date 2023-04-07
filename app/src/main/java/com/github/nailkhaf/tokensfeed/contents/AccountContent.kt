@@ -1,9 +1,6 @@
-@file:OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
-
 package com.github.nailkhaf.tokensfeed.contents
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
@@ -11,7 +8,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
@@ -28,12 +24,13 @@ fun AccountContent(
     modifier: Modifier = Modifier
 ) {
     val state by accountComponent.model.state.collectAsState()
+    val account by accountComponent.model.account.collectAsState()
 
     AddressTextField(
         modifier = modifier
             .padding(start = 16.dp, end = 8.dp)
             .fillMaxWidth(),
-        account = state.account,
+        account = account,
         error = state.error,
         submitted = state.submitted,
         onSubmit = accountComponent.model::onSubmit,
@@ -50,7 +47,7 @@ fun AddressTextField(
     onSubmit: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var text by remember { mutableStateOf(account) }
+    var text by remember(account) { mutableStateOf(account) }
     var isFocused by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
 

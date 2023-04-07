@@ -6,10 +6,10 @@ import com.github.nailkhaf.web3.models.Address
 import kotlinx.coroutines.flow.Flow
 
 interface ERC20TokensRepository {
-    fun getTokenBalances(chainId: ULong, account: Address): Flow<List<TokenBalance>>
+    fun getTokenBalances(chainId: ULong = 1uL, account: Address): Flow<List<TokenBalance>>
 
     suspend fun detectNewERC20Tokens(
-        chainId: ULong,
+        chainId: ULong = 1uL,
         account: Address,
         tokenList: TokenList = TokenList.Rainbow,
     )

@@ -3,20 +3,24 @@ package com.github.nailkhaf.feature.account
 import com.arkivanov.essenty.instancekeeper.InstanceKeeper
 import com.arkivanov.essenty.parcelable.Parcelable
 import com.arkivanov.essenty.parcelable.Parcelize
+import com.github.nailkhaf.data.account.AccountRepository
 import com.github.nailkhaf.web3.models.decodeAddress
 import com.github.nailkhaf.web3.models.formatChecksum
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 
 class AccountModel(
-    private val onAccountChanged: (String) -> Unit,
-    savedState: State? = null,
+    private val accountRepository: AccountRepository,
     coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob()),
 ) : InstanceKeeper.Instance,
     CoroutineScope by coroutineScope {
 
-    val state = MutableStateFlow(savedState ?: State())
+    val state = MutableStateFlow(State())
+
+    val account: StateFlow<String> = accountRepository.account
+        .map { it.formatChecksum() }
+        .flowOn(Dispatchers.Default)
+        .stateIn(this, SharingStarted.WhileSubscribed(), "")
 
     fun onSelect() {
         launch {
@@ -28,8 +32,8 @@ class AccountModel(
         launch {
             val error = validateAddress(text)
             if (error == null) {
-                state.update { it.copy(error = null, account = text, submitted = true) }
-                onAccountChanged(text.decodeAddress().formatChecksum())
+                state.update { it.copy(error = null, submitted = true) }
+                accountRepository.changeAccount(text.decodeAddress())
             } else {
                 state.update { it.copy(error = error, submitted = false) }
             }
@@ -38,20 +42,14 @@ class AccountModel(
 
     @Parcelize
     data class State(
-        val account: String = "0xcf4B8167378be0503f5674494188a89a1F401D44",
         val error: String? = null,
         val submitted: Boolean = false,
     ) : Parcelable
 
     override fun onDestroy() = cancel()
-
-    companion object {
-        val key = "AccountModel.key"
-    }
-
 }
 
-private fun validateAddress(text: String): String? {
+internal fun validateAddress(text: String): String? {
     val address by lazy(LazyThreadSafetyMode.NONE) { runCatching { text.decodeAddress() } }
     return when {
         text.startsWith("0x", ignoreCase = true).not() -> "Address must have prefix 0x"

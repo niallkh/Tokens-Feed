@@ -2,9 +2,9 @@ syntax = "proto3";
 
 option java_package = "com.github.nailkhaf.datastore";
 
-
 message Store {
   repeated DiscoveryProgress progresses = 1;
+  bytes account = 2;
 }
 
 message DiscoveryProgress {

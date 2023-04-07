@@ -1,69 +1,50 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.github.nailkhaf.feature.balances
 
 import com.arkivanov.essenty.instancekeeper.InstanceKeeper
-import com.arkivanov.essenty.parcelable.Parcelable
-import com.arkivanov.essenty.parcelable.Parcelize
+import com.github.nailkhaf.data.account.AccountRepository
 import com.github.nailkhaf.data.tokens.ERC20TokensRepository
 import com.github.nailkhaf.data.tokens.tokenlist.TokenList
-import com.github.nailkhaf.web3.models.decodeAddress
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
 class BalanceListModel(
     private val tokensRepository: ERC20TokensRepository,
-    savedState: State? = null,
+    private val accountRepository: AccountRepository,
     coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob()),
 ) : InstanceKeeper.Instance,
     CoroutineScope by coroutineScope {
 
     private var detectTokensJob: Job? = null
 
-    internal val state = MutableStateFlow(savedState ?: State())
+    private val detecting = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = detecting
 
-    val balances: StateFlow<List<Balance>> = state
-        .flatMapLatest {
-            tokensRepository.getTokenBalances(
-                it.chainId,
-                it.account.decodeAddress()
-            )
-        }
+    val balances: StateFlow<List<Balance>> = accountRepository.account
+        .flatMapLatest { tokensRepository.getTokenBalances(account = it) }
         .map { it.map(::map) }
+        .flowOn(Dispatchers.Default)
         .stateIn(this, SharingStarted.WhileSubscribed(), emptyList())
-
-    fun changeAccount(account: String) {
-        launch {
-            state.update {
-                it.copy(account = account)
-            }
-        }
-        detectTokens()
-    }
 
     fun detectTokens() {
         detectTokensJob?.cancel()
         detectTokensJob = launch {
-            val state = state.value
-            tokensRepository.detectNewERC20Tokens(
-                chainId = state.chainId,
-                account = state.account.decodeAddress(),
-                tokenList = TokenList.OneInch,
-            )
+            accountRepository.account.collectLatest { account ->
+                detecting.value = true
+                tokensRepository.detectNewERC20Tokens(
+                    account = account,
+                    tokenList = TokenList.OneInch,
+                )
+                detecting.value = false
+            }
         }
     }
 
     fun stopDetectingTokens() {
         detectTokensJob?.cancel()
+        detecting.value = false
     }
-
-    @Parcelize
-    data class State(
-        val chainId: ULong = 1u,
-        val account: String = "0xcf4B8167378be0503f5674494188a89a1F401D44",
-    ) : Parcelable
 
     override fun onDestroy() = cancel()
-
-    companion object {
-        val key = "BalanceListModel.State"
-    }
 }

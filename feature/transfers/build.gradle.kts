@@ -10,6 +10,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
+                implementation(project(":data:account"))
                 implementation(project(":data:tokens"))
                 implementation(project(":core:web3"))
                 implementation(libs.decompose)

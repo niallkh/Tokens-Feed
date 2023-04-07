@@ -90,7 +90,7 @@ suspend fun Web3Provider.multiCall(
     chainId: ULong,
     vararg contractCalls: ContractCall<*, *>,
 ): Unit = withContext(Dispatchers.Default) {
-    contractCalls.toList().chunked(Multicall3.maxCallSize).forEach { calls ->
+    contractCalls.toList().chunked(Multicall3.maxCallAmount).forEach { calls ->
         val result = ethCall(
             chainId = chainId,
             target = Multicall3.address,

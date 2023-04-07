@@ -122,6 +122,7 @@ include(":feature:balances")
 include(":feature:transfers")
 include(":feature:account")
 
+include(":data:account")
 include(":data:tokens")
 
 include(":core:web3")

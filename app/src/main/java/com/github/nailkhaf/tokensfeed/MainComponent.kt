@@ -9,15 +9,7 @@ class MainComponent(
     componentContext: ComponentContext
 ) : ComponentContext by componentContext {
 
-    val accountComponent = AccountComponent(
-        onAccountChanged = {
-            balancesComponent.model.changeAccount(it)
-            transfersComponent.model.changeAccount(it)
-        },
-        componentContext = this
-    )
-
+    val accountComponent = AccountComponent(this)
     val balancesComponent = BalanceListComponent(this)
-
     val transfersComponent = TransferListComponent(this)
 }
