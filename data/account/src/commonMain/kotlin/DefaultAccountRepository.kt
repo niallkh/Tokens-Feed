@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import okio.ByteString
 
-private val DEFAULT_ADDRESS = "0xcf4B8167378be0503f5674494188a89a1F401D44".decodeAddress()
+private val DEFAULT_ADDRESS = "0x7DBB4bdCfE614398D1a68ecc219F15280d0959E0".decodeAddress()
 
 class DefaultAccountRepository(
     private val store: AppStore,

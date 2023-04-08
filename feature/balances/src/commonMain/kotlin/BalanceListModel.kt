@@ -12,9 +12,9 @@ import kotlinx.coroutines.flow.*
 class BalanceListModel(
     private val tokensRepository: ERC20TokensRepository,
     private val accountRepository: AccountRepository,
-    coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob()),
+    coroutineExceptionHandler: CoroutineExceptionHandler,
 ) : InstanceKeeper.Instance,
-    CoroutineScope by coroutineScope {
+    CoroutineScope by CoroutineScope(coroutineExceptionHandler + Dispatchers.Main + SupervisorJob()) {
 
     private var detectTokensJob: Job? = null
 
@@ -32,11 +32,14 @@ class BalanceListModel(
         detectTokensJob = launch {
             accountRepository.account.collectLatest { account ->
                 detecting.value = true
-                tokensRepository.detectNewERC20Tokens(
-                    account = account,
-                    tokenList = TokenList.OneInch,
-                )
-                detecting.value = false
+                try {
+                    tokensRepository.detectNewERC20Tokens(
+                        account = account,
+                        tokenList = TokenList.OneInch,
+                    )
+                } finally {
+                    detecting.value = false
+                }
             }
         }
     }

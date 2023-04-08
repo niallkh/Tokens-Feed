@@ -11,9 +11,9 @@ import kotlinx.coroutines.flow.*
 class TransferListModel(
     private val tokensRepository: ERC20TransfersRepository,
     private val accountRepository: AccountRepository,
-    coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob()),
+    coroutineExceptionHandler: CoroutineExceptionHandler,
 ) : InstanceKeeper.Instance,
-    CoroutineScope by coroutineScope {
+    CoroutineScope by CoroutineScope(coroutineExceptionHandler + Dispatchers.Main + SupervisorJob()) {
 
     private var detectTransfersJob: Job? = null
 
@@ -33,11 +33,14 @@ class TransferListModel(
         detectTransfersJob = launch {
             accountRepository.account.collectLatest { account ->
                 detecting.value = true
-                tokensRepository.detectNewIncomingERC20Transfers(
-                    account = account,
-                    limit = 50u
-                )
-                detecting.value = false
+                try {
+                    tokensRepository.detectNewIncomingERC20Transfers(
+                        account = account,
+                        limit = 50u
+                    )
+                } finally {
+                    detecting.value = false
+                }
             }
         }
     }
