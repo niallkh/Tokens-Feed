@@ -17,10 +17,8 @@ import com.ionspin.kotlin.bignum.integer.BigInteger
 import com.squareup.sqldelight.db.SqlDriver
 import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockkClass
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import okio.ByteString.Companion.decodeHex
 import okio.FileSystem
@@ -38,7 +36,6 @@ import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 
 private val ACCOUNT = "0xcf4B8167378be0503f5674494188a89a1F401D44".decodeAddress()
-private val TOKEN = "0xdac17f958d2ee523a2206206994597c13d831ec7".decodeAddress()
 
 class ERC20TransfersRepositoryTest : KoinTest {
 
@@ -58,7 +55,7 @@ class ERC20TransfersRepositoryTest : KoinTest {
             }
         }
         declareMock<TokenListProvider> {
-            every { this@declareMock.invoke(any()) } returns flowOf(emptyList())
+            coEvery { this@declareMock.invoke(any()) } returns emptyList()
         }
         declare<SqlDriver> {
             JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)

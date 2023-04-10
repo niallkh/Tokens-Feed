@@ -57,7 +57,7 @@ class Web3ProviderTest : KoinTest {
         runBlocking {
             val blockNumber = get<Web3Provider>().ethBlockNumber(1u)
 
-            assertEquals(16981434uL, blockNumber)
+            assertEquals(16981434L, blockNumber)
         }
     }
 

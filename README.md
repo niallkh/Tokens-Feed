@@ -41,3 +41,8 @@ run:
 - `./gradlew generateCommonMainDatabaseInterface`
 - `./gradlew generateCommonCommonMainProtos`
 - `./gradlew installDebug`
+
+## Screenshots
+
+![Balances](screenshots/balances.jpg)
+![Transfers](screenshots/transfers.jpg)

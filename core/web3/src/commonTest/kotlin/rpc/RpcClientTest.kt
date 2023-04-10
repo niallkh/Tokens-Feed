@@ -89,7 +89,7 @@ private val BLOCK_NUMBER_RESPONSE = """
 """.trimIndent()
 
 private val FAILED_RESPONSE = """
-    {"jsonrpc":"2.0","error":"Smth went wrong","id":0}
+    {"jsonrpc":"2.0","error":{"message":"Smth went wrong"},"id":0}
 """.trimIndent()
 
 private val STATE_UNAVAILABLE_RESPONSE = """
