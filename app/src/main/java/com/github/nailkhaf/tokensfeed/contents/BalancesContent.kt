@@ -3,6 +3,7 @@
 package com.github.nailkhaf.tokensfeed.contents
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
@@ -17,7 +18,9 @@ import com.github.nailkhaf.tokensfeed.components.TokenValue
 @Composable
 fun LazyItemScope.BalanceListItem(balance: Balance) {
     ListItem(
-        modifier = Modifier.animateItemPlacement(),
+        modifier = Modifier
+            .clickable { }
+            .animateItemPlacement(),
         headlineContent = {
             Text(
                 text = balance.tokenName,
@@ -40,7 +43,12 @@ fun LazyItemScope.BalanceListItem(balance: Balance) {
             TokenValue(value = balance.balance, symbol = balance.tokenSymbol)
         },
         supportingContent = balance.tokenAddress?.let {
-            { Text(text = "${it.substring(0, 6)}...${it.substring(38, 42)}") }
+            {
+                Text(
+                    modifier = Modifier.clickable { },
+                    text = "${it.substring(0, 6)}...${it.substring(38, 42)}"
+                )
+            }
         },
     )
 }

@@ -3,6 +3,7 @@
 package com.github.nailkhaf.tokensfeed.contents
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
@@ -17,7 +18,9 @@ import com.github.nailkhaf.tokensfeed.components.TokenValue
 @Composable
 fun LazyItemScope.TransferListItem(transfer: Transfer) {
     ListItem(
-        modifier = Modifier.animateItemPlacement(),
+        modifier = Modifier
+            .clickable { }
+            .animateItemPlacement(),
         headlineContent = {
             Text(
                 text = transfer.tokenName,
